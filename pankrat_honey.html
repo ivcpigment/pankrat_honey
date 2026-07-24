@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Медовый детектив: Панкрат ищет мёд</title>
+    <style>
+        /* ===== БАЗОВЫЕ СТИЛИ ===== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: linear-gradient(145deg, #fdf3d0 0%, #f7d78e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            margin: 0;
+        }
+        .game-container {
+            max-width: 800px;
+            width: 100%;
+            background: #fffcf0;
+            border-radius: 48px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            padding: 20px 20px 30px;
+            border: 2px solid #e6b86b;
+        }
+
+        /* ===== ШАПКА ===== */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: #fcebc1;
+            padding: 10px 18px;
+            border-radius: 100px;
+            border: 2px solid #dba14b;
+            flex-wrap: wrap;
+        }
+        .header .avatar { font-size: 2.4rem; line-height: 1; }
+        .header .title { font-size: 1.1rem; font-weight: 700; color: #5a3e1b; }
+        .header .sub { font-size: 0.75rem; color: #7a5d2e; font-weight: 500; }
+        .header .badge {
+            margin-left: auto;
+            background: #b8862c;
+            color: white;
+            padding: 4px 16px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        @media (max-width: 500px) {
+            .header .badge { margin-left: 0; width: 100%; text-align: center; }
+        }
+
+        /* ===== ЭКРАНЫ ===== */
+        .screen { display: none; animation: fadeIn 0.4s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }
+
+        /* ===== ОБЩИЙ LAYOUT ===== */
+        .content-layout {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            background: #fcf3e2;
+            border-radius: 28px;
+            padding: 20px;
+            border: 2px solid #dba14b;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        }
+        .content-image {
+            flex: 0 0 200px;
+            width: 200px;
+            height: 200px;
+            border-radius: 16px;
+            object-fit: cover;
+            border: 2px solid #dba14b;
+        }
+        .content-text {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #5a3e1b;
+            margin-bottom: 6px;
+        }
+        .content-description {
+            font-size: 1.1rem;
+            color: #3d2e17;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+        .btn-primary {
+            background: #dba14b;
+            border: none;
+            color: #2d1f0c;
+            font-weight: 800;
+            font-size: 1.2rem;
+            padding: 14px 36px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 6px 0 #a5732e;
+            border: 2px solid #c28c3a;
+            align-self: flex-start;
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 0 #a5732e;
+            background: #e8b15a;
+        }
+        .btn-primary:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #a5732e;
+        }
+
+        /* ===== УРОВЕНЬ ===== */
+        .level-number {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #b8862c;
+            margin-bottom: 4px;
+        }
+        .level-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #4d3416;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .option-btn {
+            background: white;
+            border: 2px solid #dba14b;
+            border-radius: 60px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2d1f0c;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 3px 0 #a5732e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: left;
+        }
+        .option-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 0 #a5732e;
+            background: #fff6e0;
+        }
+        .option-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #a5732e;
+        }
+        .option-btn .opt-icon {
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        .option-btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            filter: grayscale(0.3);
+        }
+        .option-btn.correct { background: #a5d6a7; border-color: #43a047; color: #1b5e20; box-shadow: 0 3px 0 #2e7d32; }
+        .option-btn.wrong { background: #ef9a9a; border-color: #e53935; color: #b71c1c; box-shadow: 0 3px 0 #c62828; }
+
+        .explanation-box {
+            margin-top: 12px;
+            background: #faf1df;
+            padding: 14px 18px;
+            border-radius: 20px;
+            border-left: 6px solid #dba14b;
+            text-align: left;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #3d2e17;
+        }
+        .explanation-box strong { color: #b8862c; }
+        .next-btn {
+            margin-top: 16px;
+            background: #b8862c;
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 14px 30px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 6px 0 #735a22;
+            border: 2px solid #a0722b;
+            width: 100%;
+        }
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #735a22;
+            background: #cc9a3c;
+        }
+        .next-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #735a22; }
+
+        /* ===== ФИНАЛ (центрированный) ===== */
+        .final-text {
+            text-align: center;
+        }
+        .final-text .restart-btn {
+            align-self: center;
+        }
+        .final-rank {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #b8862c;
+            margin: 10px 0 6px;
+        }
+        .restart-btn {
+            background: #dba14b;
+            border: none;
+            color: #2d1f0c;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 14px 36px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 6px 0 #a5732e;
+            border: 2px solid #c28c3a;
+        }
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #a5732e;
+            background: #e8b15a;
+        }
+        .restart-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #a5732e;
+        }
+
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 600px) {
+            .content-layout {
+                flex-direction: column;
+                align-items: center;
+                padding: 16px;
+            }
+            .content-image {
+                flex: 0 0 auto;
+                width: 100%;
+                max-width: 280px;
+                height: auto;
+                aspect-ratio: 1/1;
+            }
+            .content-title { font-size: 1.6rem; text-align: center; }
+            .content-description { font-size: 1rem; text-align: center; }
+            .btn-primary, .restart-btn { align-self: center; width: 100%; text-align: center; }
+            .level-text { font-size: 1.1rem; text-align: center; }
+            .level-number { text-align: center; }
+            .option-btn { font-size: 0.95rem; padding: 10px 16px; }
+            .option-btn .opt-icon { font-size: 1.2rem; }
+        }
+        @media (max-width: 380px) {
+            .content-title { font-size: 1.3rem; }
+            .content-description { font-size: 0.9rem; }
+            .level-text { font-size: 0.95rem; }
+            .option-btn { font-size: 0.85rem; padding: 8px 12px; }
+            .final-rank { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="app">
+
+    <!-- ===== ШАПКА ===== -->
+    <div class="header">
+        <span class="avatar">🐺</span>
+        <div>
+            <div class="title">Панкрат, химик-сыщик</div>
+            <div class="sub">Информационно-выставочный центр АО «Пигмент»</div>
+        </div>
+        <span class="badge" id="levelBadge">Опыт 0 / 3</span>
+    </div>
+
+    <!-- ===== ВСТУПЛЕНИЕ ===== -->
+    <div class="screen active" id="screenIntro">
+        <div class="content-layout">
+            <img src="med1.jpg" alt="Вступление" class="content-image" />
+            <div class="content-text">
+                <div class="content-title">🍯 Медовый детектив</div>
+                <div class="content-description">Волк Панкрат хочет купить мёд, но сомневается: «А не подделка ли?» К счастью, рядом находится Информационно-выставочный центр завода «Пигмент». Здесь помогут разобраться без микроскопа, зато с юмором и опытами.</div>
+                <button class="btn-primary" id="startBtn">🚀 В путь!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== УРОВЕНЬ ===== -->
+    <div class="screen" id="screenLevel">
+        <div class="content-layout">
+            <img id="levelImage" class="content-image" src="" alt="Уровень" />
+            <div class="content-text">
+                <div class="level-number" id="levelTitle">Опыт 1</div>
+                <div class="level-text" id="situationText">Текст ситуации</div>
+                <div class="options" id="optionsContainer">
+                    <!-- Кнопки добавит скрипт -->
+                </div>
+                <div id="explanationBlock" style="display:none;">
+                    <div class="explanation-box" id="explanationText"></div>
+                    <button class="next-btn" id="nextBtn">➡️ Далее</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ФИНАЛ (с центрированием) ===== -->
+    <div class="screen" id="screenFinal">
+        <div class="content-layout">
+            <img src="med5.jpg" alt="Финал" class="content-image" />
+            <div class="content-text final-text">
+                <div class="content-title">🏆 Вы — настоящий химический сыщик!</div>
+                <div class="content-description">🐺 Панкрат гордится вами! Вы прошли все три испытания и теперь знаете, как распознать крахмал, мел и сахарный сироп в мёде.</div>
+                <div class="final-rank">Химия — это увлекательно и полезно для жизни</div>
+                <div class="content-description" style="font-size:0.95rem;">Приходите в ИВЦ АО «Пигмент» за новыми открытиями!</div>
+                <button class="restart-btn" id="restartBtn">🔄 Пройти заново</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===== ДАННЫЕ УРОВНЕЙ =====
+    const levels = [
+        {
+            id: 1,
+            title: 'Мёд кажется слишком густым. Как проверить качество?',
+            image: 'med2.jpg',
+            options: [
+                {
+                    text: 'Добавить каплю йода',
+                    icon: '🧪',
+                    correct: true,
+                    successText: 'Синий цвет — как небо над Тамбовом! Это классическая реакция на крахмал. Значит, в мёд добавили загуститель, чтобы скрыть его молодость. Настоящий мёд при контакте с йодом останется золотистым. В лаборатории «Пигмента» такой образец отправили бы в отдел брака.'
+                },
+                {
+                    text: 'Поставить в холодильник',
+                    icon: '❄️',
+                    correct: false,
+                    errorText: 'Холод — не реактив. Вы будете ждать сутки, а химики ценят скорость. Этот метод не для детективов. Правильно использовать для проверки йод.'
+                },
+                {
+                    text: 'Намазать на свежий хлеб',
+                    icon: '🍞',
+                    correct: false,
+                    errorText: 'Хлеб станет слаще, но это не анализ. Настоящий химик сначала проверяет состав, а потом завтракает. Правильно использовать для проверки йод.'
+                }
+            ]
+        },
+        {
+            id: 2,
+            title: 'В мёде подозрительный осадок. Как проверить качество?',
+            image: 'med3.jpg',
+            options: [
+                {
+                    text: 'Капнуть уксусом',
+                    icon: '🧴',
+                    correct: true,
+                    successText: 'Осадок зашипел и запузырился — это углекислый газ от реакции с мелом. Пыльца так не реагирует. Вы повторили классический лабораторный метод!'
+                },
+                {
+                    text: 'Капнуть лимонным соком',
+                    icon: '🍋',
+                    correct: false,
+                    errorText: 'Лимонная кислота даст реакцию, но слабее. Вы будете сомневаться. Уксус — более наглядный реагент.'
+                },
+                {
+                    text: 'Попробовать на язык',
+                    icon: '👅',
+                    correct: false,
+                    errorText: 'Мел на вкус как мел. К тому же есть неизвестный порошок опасно! Доверяйте реактивам, а не языку. И самый лучший реагент — уксус!'
+                }
+            ]
+        },
+        {
+            id: 3,
+            title: 'У мёда нет аромата. Как проверить качество?',
+            image: 'med4.jpg',
+            options: [
+                {
+                    text: 'Капнуть мёд на бумажную салфетку',
+                    icon: '🧻',
+                    correct: true,
+                    successText: 'Капля растеклась водянистым пятном — в мёде много воды, он разбавлен сиропом. Настоящий мёд остаётся плотной каплей. Блестящий домашний тест!'
+                },
+                {
+                    text: 'Нагреть на ложке над плитой',
+                    icon: '🔥',
+                    correct: false,
+                    errorText: 'Технически это сработает, но вы уничтожите образец и испортите ложку. Мы не одобряем такие варварские методы. Капля мёда на бумаге — более наглядный и безопасный способ проверки.'
+                },
+                {
+                    text: 'Использовать химический карандаш',
+                    icon: '✏️',
+                    correct: false,
+                    errorText: 'Это ретро-метод из 50-х, сейчас такой карандаш — раритет. Нам нужен современный и доступный лайфхак. Капля мёда на бумаге — более наглядный способ проверки.'
+                }
+            ]
+        }
+    ];
+
+    // ===== ФРАЗЫ ДЛЯ НЕПРАВИЛЬНЫХ ОТВЕТОВ =====
+    const wrongPhrases = [
+        '❌ А вот и нет! Но теперь ты точно запомнишь!',
+        '❌ Ой, промахнулся! Зато узнаешь правду.',
+        '❌ Не угадал, но это было интересное предположение!',
+        '❌ Упс! Но мы же здесь, чтобы учиться, верно?',
+        '❌ Хм, а я думал иначе. Давай посмотрим, как на самом деле.'
+    ];
+
+    // ===== СОСТОЯНИЕ =====
+    let currentLevel = 0;
+    let isAnswered = false;
+
+    // ===== DOM =====
+    const screenIntro = document.getElementById('screenIntro');
+    const screenLevel = document.getElementById('screenLevel');
+    const screenFinal = document.getElementById('screenFinal');
+    const levelBadge = document.getElementById('levelBadge');
+    const levelTitle = document.getElementById('levelTitle');
+    const situationText = document.getElementById('situationText');
+    const levelImage = document.getElementById('levelImage');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const explanationBlock = document.getElementById('explanationBlock');
+    const explanationText = document.getElementById('explanationText');
+    const nextBtn = document.getElementById('nextBtn');
+    const startBtn = document.getElementById('startBtn');
+    const restartBtn = document.getElementById('restartBtn');
+
+    // ===== ФУНКЦИИ =====
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function renderLevel(index) {
+        const level = levels[index];
+        if (!level) {
+            showFinal();
+            return;
+        }
+        isAnswered = false;
+        levelBadge.textContent = `Опыт ${index+1} / ${levels.length}`;
+        levelTitle.textContent = `Опыт ${index+1}`;
+        situationText.textContent = level.title;
+        levelImage.src = level.image;
+
+        optionsContainer.innerHTML = '';
+        level.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `<span class="opt-icon">${opt.icon}</span> ${opt.text}`;
+            btn.dataset.index = idx;
+            btn.addEventListener('click', () => handleOptionClick(index, idx));
+            optionsContainer.appendChild(btn);
+        });
+
+        explanationBlock.style.display = 'none';
+        nextBtn.textContent = (index+1 < levels.length) ? '➡️ Следующий опыт' : '🏁 Узнать результат';
+        showScreen('screenLevel');
+    }
+
+    function handleOptionClick(levelIndex, optionIndex) {
+        if (isAnswered) return;
+        isAnswered = true;
+
+        const level = levels[levelIndex];
+        const option = level.options[optionIndex];
+        const isCorrect = option.correct;
+
+        document.querySelectorAll('.option-btn').forEach(b => b.classList.add('disabled'));
+
+        const buttons = document.querySelectorAll('.option-btn');
+        buttons.forEach((b, idx) => {
+            if (level.options[idx].correct) b.classList.add('correct');
+            if (idx === optionIndex && !isCorrect) b.classList.add('wrong');
+        });
+
+        const wrongMsg = wrongPhrases[Math.floor(Math.random() * wrongPhrases.length)];
+        const resultMsg = isCorrect ? '✅ Верно!' : wrongMsg;
+        explanationText.innerHTML = `<strong>${resultMsg}</strong><br>${isCorrect ? option.successText : option.errorText}`;
+        explanationBlock.style.display = 'block';
+
+        const nextLevelIndex = levelIndex + 1;
+        nextBtn.onclick = function() {
+            if (nextLevelIndex < levels.length) {
+                renderLevel(nextLevelIndex);
+            } else {
+                showFinal();
+            }
+        };
+    }
+
+    function showFinal() {
+        showScreen('screenFinal');
+        levelBadge.textContent = '🏁 Завершено!';
+    }
+
+    function resetGame() {
+        currentLevel = 0;
+        showScreen('screenIntro');
+        levelBadge.textContent = 'Опыт 0 / 3';
+        document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('disabled', 'correct', 'wrong'));
+    }
+
+    // ===== СОБЫТИЯ =====
+    startBtn.addEventListener('click', () => renderLevel(0));
+    restartBtn.addEventListener('click', resetGame);
+
+    resetGame();
+</script>
+</body>
+</html>
